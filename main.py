@@ -1,9 +1,11 @@
-from email.message import EmailMessage
-from datetime import date, datetime
-from time import strptime
 import smtplib
 import ssl
+from datetime import date, datetime
+from email.message import EmailMessage
+from os import getenv
+from time import strptime
 from typing import List
+from dotenv import load_dotenv
 
 months = {
     "Jan.": "01",
@@ -29,11 +31,12 @@ NEXT_DAYS = 7
 
 
 def send_email() -> None:
-    smtp_server = "xxxxx"
-    port = 465
-    sender_email = "xxxxx"
-    receiver_email = "xxxxx"
-    password = "xxxxx"
+    load_dotenv()
+    smtp_server = getenv("SMTP_SERVER")
+    smtp_port = int(getenv("SMTP_PORT"))
+    sender_email = getenv("EMAIL")
+    receiver_email = getenv("RECEIVER_EMAIL")
+    sender_password = getenv("PASSWORD")
 
     message = EmailMessage()
     message["From"] = sender_email
@@ -43,8 +46,8 @@ def send_email() -> None:
     message.set_charset("utf-8")
     context = ssl.create_default_context()
 
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
+    with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
+        server.login(sender_email, sender_password)
         server.send_message(message)
         print("The e-mail has been sent.")
 
