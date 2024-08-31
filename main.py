@@ -20,30 +20,24 @@ months = {
 }
 
 today = date.today()
-expired = []
-expired_str = ""
-soon_expiring = []
-soon_expiring_str = ""
+expired_certs = []
+soon_expiring_certs = []
+message_content = ""
 DAYS = 7
 
 
 def send_email():
-    smtp_server = "xxxxx"
+    smtp_server = "mail.inbox.lv"
     port = 465
-    sender_email = "xxxxx"
-    receiver_email = "xxxxx"
-    password = "xxxxx"
+    sender_email = "wlucert556@mail.lv"
+    receiver_email = "wlucert556@mail.lv"
+    password = "VxKp4sBW2?"
 
     message = EmailMessage()
     message["From"] = sender_email
     message["To"] = receiver_email
     message["Subject"] = "Expiring certificates"
-    message.set_content(f"""
-        Certificates that have expired:
-        {expired_str}
-        Certificates that will expire in the next {DAYS} days:
-        {soon_expiring_str}
-        """)
+    message.set_content(message_content)
     message.set_charset("utf-8")
     context = ssl.create_default_context()
 
@@ -72,23 +66,45 @@ with open("sample_data.csv") as file:
         days_to_expire = int(days_to_expire)
         if days_to_expire == 0:
             cert = f"{name} - expires today"
-            soon_expiring.append(cert)
+            soon_expiring_certs.append(cert)
         elif 0 < days_to_expire <= 7:
             cert = f"{name} - expires in {days_to_expire} days ({date})"
-            soon_expiring.append(cert)
+            soon_expiring_certs.append(cert)
         elif days_to_expire < 0:
             cert = f"{name} - expired {-days_to_expire} days ago ({date})"
-            expired.append(cert)
+            expired_certs.append(cert)
 
-for expired_cert in expired:
-    expired_str += expired_cert + "\n"
 
-for expire_cert in soon_expiring:
-    soon_expiring_str += expire_cert + "\n"
+def get_expired_certs_str(expired_certs: list) -> str:
+    expired_certs_str = ""
+    for expired_cert in expired_certs:
+        expired_certs_str += expired_cert + "\n"
+    return expired_certs_str
 
-if len(expired) > 0:
-    print(f"Certificates that have expired: \n{expired_str}")
-    print(f"Certificates that will expire in the next {DAYS} days: \n{soon_expiring_str}")
-    send_email()
-else:
-    print("All certificates are current.")
+
+def get_expiring_soon_certs_str(expiring_certs: list) -> str:
+    soon_expiring_certs_str = ""
+    for soon_expiring_cert in expiring_certs:
+        soon_expiring_certs_str += soon_expiring_cert + "\n"
+    return soon_expiring_certs_str
+
+
+if __name__ == '__main__':
+    if expired_certs or soon_expiring_certs:
+        if expired_certs:
+            expired_certs_str = get_expired_certs_str(expired_certs=expired_certs)
+            message_content += f"""
+        Certificates that have expired:
+        {expired_certs_str}
+        """
+            print(f"Certificates that have expired: \n{expired_certs_str}")
+        if soon_expiring_certs:
+            soon_expiring_certs_str = get_expiring_soon_certs_str(expiring_certs=soon_expiring_certs)
+            message_content += f"""
+            Certificates that will expire in the next {DAYS} days:
+        {soon_expiring_certs_str}
+        """
+            print(f"Certificates that will expire in the next {DAYS} days: \n{soon_expiring_certs_str}")
+        send_email()
+    else:
+        print("All certificates are current.")
