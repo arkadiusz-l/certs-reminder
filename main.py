@@ -34,7 +34,7 @@ def send_email() -> None:
     load_dotenv()
     smtp_server = getenv("SMTP_SERVER")
     smtp_port = int(getenv("SMTP_PORT"))
-    sender_email = getenv("EMAIL")
+    sender_email = getenv("SENDER_EMAIL")
     receiver_email = getenv("RECEIVER_EMAIL")
     sender_password = getenv("PASSWORD")
 
